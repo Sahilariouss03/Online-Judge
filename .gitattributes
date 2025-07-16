@@ -1,0 +1,3 @@
+# Ensure JSON and JavaScript files use LF line endings
+*.json text eol=lf
+*.js text eol=lf
