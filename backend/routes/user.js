@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 
 const router = express.Router();
 
-// Update User (Authenticated user)
+// Update User 
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
     const { firstName, LastName, email, password } = req.body;
@@ -24,7 +24,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
   }
 });
 
-// Delete User (Authenticated user)
+// Delete User 
 router.delete('/profile', authMiddleware, async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.user.id);

@@ -15,4 +15,12 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+const isAdmin = (req, res, next) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ message: 'Admin privileges required' });
+  }
+  next();
+};
+
 module.exports = authMiddleware;
+module.exports.isAdmin = isAdmin;
