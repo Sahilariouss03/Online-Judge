@@ -5,7 +5,11 @@ const problemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   statement: { type: String, required: true },
   difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
-  testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: 'TestCase' }],
+  testCases: [{
+    input: { type: String, required: true },
+    expectedOutput: { type: String, required: true },
+    description: { type: String, default: 'Test case' }
+  }]
 });
 
 problemSchema.index({ problemId: 1 });

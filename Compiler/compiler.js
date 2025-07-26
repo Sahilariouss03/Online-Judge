@@ -39,6 +39,16 @@ app.post('/run',async(req,res) =>{
             errorMessage = "Error: Missing semicolon (;) at the end of a statement.";
         } else if (errorMessage.includes("'cout' was not declared")) {
             errorMessage = "Error: Missing '#include <iostream>' or 'using namespace std;'";
+        } else if (errorMessage.includes("'cin' was not declared")) {
+            errorMessage = "Error: Missing '#include <iostream>' or 'using namespace std;' for input operations.";
+        } else if (errorMessage.includes("'scanf' was not declared")) {
+            errorMessage = "Error: Missing '#include <cstdio>' for scanf operations.";
+        } else if (errorMessage.includes("'printf' was not declared")) {
+            errorMessage = "Error: Missing '#include <cstdio>' for printf operations.";
+        } else if (errorMessage.includes("undefined reference")) {
+            errorMessage = "Error: Compilation failed due to undefined references. Check your includes and function declarations.";
+        } else if (errorMessage.includes("cannot find")) {
+            errorMessage = "Error: Compilation failed. Check your syntax and includes.";
         }
         res.status(500).json({ error: errorMessage });
     }

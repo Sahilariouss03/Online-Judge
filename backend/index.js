@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const cookieParser = require('cookie-parser');
 const DBConnection = require('./database/db');
 const User = require('./models/user');
 const userRoutes = require('./routes/user');
@@ -15,9 +16,28 @@ dotenv.config();
 DBConnection();
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: 'http://localhost:5173' }));
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// Body parsing with size limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser()); // Parse cookies
+// CORS configuration - permissive for production
+app.use(cors({ 
+  origin: true, // Allow all origins
+  credentials: true, // Enable cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  maxAge: 86400 // 24 hours
+}));
 
 // Routes
 app.use('/users', userRoutes);
@@ -27,29 +47,69 @@ app.use('/problems', problemRoutes);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
+app.post('/ai-review',async(req,res) => {
+  const { code } = req.body;
+    if(code === undefined || code === null || code === ''){
+      return res.status(400).json({ message: 'Code is required' });
+    }
+  try {
+      const aiReview = await generateAIReview(code);
+  } catch (error) {
+    console.error('Error during AI review:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 app.post('/register', async (req, res) => {
   try {
     let { firstName, LastName, email, password } = req.body;
+    
+    // Input validation
     if (!firstName || !LastName || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+    
+    // Password strength validation
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+    
+    // Sanitize inputs
+    firstName = firstName.trim().replace(/[<>]/g, '');
+    LastName = LastName.trim().replace(/[<>]/g, '');
+    email = email.trim().toLowerCase();
     email = email.trim().toLowerCase(); // Normalize email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, parseInt(process.env.BCRYPT_ROUNDS) || 10);
     const newUser = await User.create({
       firstName,
       LastName,
       email,
       password: hashedPassword,
     });
-    const token = jwt.sign({ id: newUser._id, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: newUser._id, email }, process.env.JWT_SECRET, { 
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h' 
+    });
+    
+    // Set JWT token in HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS in production
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    
     return res.status(201).json({
       message: 'User registered successfully',
-      token,
       user: {
         firstName: newUser.firstName,
         LastName: newUser.LastName,
@@ -62,45 +122,6 @@ app.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
     console.error('Error during registration:', error);
-    return res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
-
-app.post('/register/admin', async (req, res) => {
-  try {
-    let { firstName, LastName, email, password } = req.body;
-    if (!firstName || !LastName || !email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-    email = email.trim().toLowerCase();
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    const newUser = await User.create({
-      firstName,
-      LastName,
-      email,
-      password: hashedPassword,
-      isAdmin: true
-    });
-    const token = jwt.sign({ id: newUser._id, email, isAdmin: true }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    return res.status(201).json({
-      message: 'Admin registered successfully',
-      token,
-      user: {
-        firstName: newUser.firstName,
-        LastName: newUser.LastName,
-        email: newUser.email,
-        isAdmin: true
-      },
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-    console.error('Error during admin registration:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -120,10 +141,20 @@ app.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { 
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h' 
+    });
+    
+    // Set JWT token in HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS in production
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    
     return res.json({
       message: 'Login successful',
-      token,
       user: {
         firstName: user.firstName,
         LastName: user.LastName,
@@ -151,10 +182,20 @@ app.post('/login/admin', async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid admin credentials' });
     }
-    const token = jwt.sign({ id: user._id, email: user.email, isAdmin: true }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id, email: user.email, isAdmin: true }, process.env.JWT_SECRET, { 
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h' 
+    });
+    
+    // Set JWT token in HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS in production
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    
     return res.json({
       message: 'Admin login successful',
-      token,
       user: {
         firstName: user.firstName,
         LastName: user.LastName,
@@ -166,6 +207,16 @@ app.post('/login/admin', async (req, res) => {
     console.error('Error during admin login:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
+});
+
+app.post('/logout', (req, res) => {
+  // Clear the JWT cookie
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  res.json({ message: 'Logged out successfully' });
 });
 
 const PORT = process.env.PORT || 3000;

@@ -52,9 +52,8 @@ function ProfileDropdown({ setIsLoggedIn }) {
   const [originalUser, setOriginalUser] = useState({});
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.email) {
       setFirstName(user.firstName || "");
       setLastName(user.LastName || "");
       setEmail(user.email || "");
@@ -63,8 +62,18 @@ function ProfileDropdown({ setIsLoggedIn }) {
     }
   }, [showEdit]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    try {
+      // Call logout endpoint to clear cookie
+      await fetch("http://localhost:3000/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+    
+    // Clear localStorage
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("user");
     setIsLoggedIn(false);
@@ -76,7 +85,6 @@ function ProfileDropdown({ setIsLoggedIn }) {
     setError("");
     setSuccess("");
     try {
-      const token = localStorage.getItem("token");
       // Only send changed fields
       const updateData = {};
       if (firstName && firstName !== originalUser.firstName)
@@ -89,8 +97,8 @@ function ProfileDropdown({ setIsLoggedIn }) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include", // Send cookies
         body: JSON.stringify(updateData),
       });
       const data = await res.json();
@@ -107,10 +115,9 @@ function ProfileDropdown({ setIsLoggedIn }) {
     setError("");
     setSuccess("");
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch("http://localhost:3000/users/profile", {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include", // Send cookies
       });
       if (!res.ok) throw new Error("Failed to delete profile");
       setSuccess("Profile deleted!");
@@ -300,9 +307,9 @@ function ProfileDropdownButton() {
 }
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"));
   useEffect(() => {
-    const onStorage = () => setIsLoggedIn(!!localStorage.getItem("token"));
+    const onStorage = () => setIsLoggedIn(!!localStorage.getItem("user"));
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);

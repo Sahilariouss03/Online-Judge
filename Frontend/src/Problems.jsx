@@ -13,6 +13,7 @@ function Problems() {
     name: "",
     statement: "",
     difficulty: "easy",
+    testCases: []
   });
   const isAdmin = localStorage.getItem("isAdmin") === "true";
 
@@ -32,9 +33,8 @@ function Problems() {
   const handleAddProblem = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
       await axios.post("http://localhost:3000/problems", newProblem, {
-        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setShowAdd(false);
       setNewProblem({
@@ -42,6 +42,7 @@ function Problems() {
         name: "",
         statement: "",
         difficulty: "easy",
+        testCases: []
       });
       fetchProblems();
     } catch (err) {
@@ -49,13 +50,30 @@ function Problems() {
     }
   };
 
+  const addTestCase = () => {
+    setNewProblem({
+      ...newProblem,
+      testCases: [...newProblem.testCases, { input: "", expectedOutput: "", description: "Test case" }]
+    });
+  };
+
+  const updateTestCase = (index, field, value) => {
+    const updatedTestCases = [...newProblem.testCases];
+    updatedTestCases[index] = { ...updatedTestCases[index], [field]: value };
+    setNewProblem({ ...newProblem, testCases: updatedTestCases });
+  };
+
+  const removeTestCase = (index) => {
+    const updatedTestCases = newProblem.testCases.filter((_, i) => i !== index);
+    setNewProblem({ ...newProblem, testCases: updatedTestCases });
+  };
+
   const handleDelete = async (problemId) => {
     if (!window.confirm("Are you sure you want to delete this problem?"))
       return;
     try {
-      const token = localStorage.getItem("token");
       await axios.delete(`http://localhost:3000/problems/${problemId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       fetchProblems();
     } catch (err) {
@@ -125,6 +143,54 @@ function Problems() {
             <option value="medium">Medium</option>
             <option value="hard">Hard</option>
           </select>
+          {/* Test Cases Section */}
+          <div className="border-t pt-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold text-gray-700">Test Cases</h3>
+              <button
+                type="button"
+                onClick={addTestCase}
+                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+              >
+                Add Test Case
+              </button>
+            </div>
+            {newProblem.testCases.map((testCase, index) => (
+              <div key={index} className="border rounded-lg p-3 mb-3 bg-gray-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-600">Test Case {index + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeTestCase(index)}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={testCase.description}
+                  onChange={(e) => updateTestCase(index, "description", e.target.value)}
+                  className="w-full mb-2 p-2 border rounded text-sm"
+                />
+                <textarea
+                  placeholder="Input"
+                  value={testCase.input}
+                  onChange={(e) => updateTestCase(index, "input", e.target.value)}
+                  className="w-full mb-2 p-2 border rounded text-sm"
+                  rows="2"
+                />
+                <textarea
+                  placeholder="Expected Output"
+                  value={testCase.expectedOutput}
+                  onChange={(e) => updateTestCase(index, "expectedOutput", e.target.value)}
+                  className="w-full p-2 border rounded text-sm"
+                  rows="2"
+                />
+              </div>
+            ))}
+          </div>
           <button
             type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 text-base font-semibold transition-all duration-150"
@@ -135,72 +201,31 @@ function Problems() {
       )}
       <ul className="space-y-6">
         {problems.map((p) => (
-          <li
-            key={p.problemId}
-            className="bg-white rounded-2xl shadow-md p-6 flex flex-col transition-transform duration-150 hover:scale-[1.02] border border-purple-100"
-          >
-            <div
-              className="flex items-center justify-between cursor-pointer"
-              onClick={() =>
-                setSelected(selected === p.problemId ? null : p.problemId)
-              }
-            >
-              <span className="font-semibold text-purple-700">
-                ID: {p.problemId}
-              </span>
-              <span className="ml-4 font-bold text-lg text-gray-800">
-                {p.name}
-              </span>
-              <span
-                className={`ml-4 px-3 py-1 rounded-full font-medium text-xs ${
-                  p.difficulty === "easy"
-                    ? "bg-green-100 text-green-700"
-                    : p.difficulty === "medium"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {p.difficulty}
-              </span>
+          <li key={p.problemId} className="bg-white rounded-2xl shadow-md p-6 flex flex-col transition-transform duration-150 hover:scale-[1.02] border border-purple-100">
+            <div className="flex items-center justify-between cursor-pointer" onClick={() => setSelected(selected === p.problemId ? null : p.problemId)}>
+              <span className="font-semibold text-purple-700">ID: {p.problemId}</span>
+              <span className="ml-4 font-bold text-lg text-gray-800">{p.name}</span>
+              <span className={`ml-4 px-3 py-1 rounded-full font-medium text-xs ${p.difficulty === 'easy' ? 'bg-green-100 text-green-700' : p.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{p.difficulty}</span>
               {isAdmin && (
                 <span className="ml-4 flex space-x-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      /* TODO: implement edit */ alert(
-                        "Edit not implemented yet"
-                      );
-                    }}
-                    className="bg-yellow-400 text-white px-3 py-1 rounded-full hover:bg-yellow-500 text-xs font-semibold transition-all duration-150"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(p.problemId);
-                    }}
-                    className="bg-red-600 text-white px-3 py-1 rounded-full hover:bg-red-700 text-xs font-semibold transition-all duration-150"
-                  >
-                    Delete
-                  </button>
+                  <button onClick={e => { e.stopPropagation(); /* TODO: implement edit */ alert('Edit not implemented yet'); }} className="bg-yellow-400 text-white px-3 py-1 rounded-full hover:bg-yellow-500 text-xs font-semibold transition-all duration-150">Edit</button>
+                  <button onClick={e => { e.stopPropagation(); handleDelete(p.problemId); }} className="bg-red-600 text-white px-3 py-1 rounded-full hover:bg-red-700 text-xs font-semibold transition-all duration-150">Delete</button>
                 </span>
               )}
             </div>
             {selected === p.problemId && (
               <div className="mt-4 border-t pt-4 border-purple-100">
-                <div className="font-bold text-lg mb-2 text-gray-800">
-                  {p.name}
-                </div>
-                <div className="text-gray-700 whitespace-pre-line">
-                  {p.statement}
-                </div>
-                <div className="mt-4 flex justify-end">
+                <div className="font-bold text-lg mb-2 text-gray-800">{p.name}</div>
+                <div className="text-gray-700 whitespace-pre-line mb-4">{p.statement}</div>
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-gray-600">
+                    {p.testCases && p.testCases.length > 0 ? `${p.testCases.length} test case(s)` : 'No test cases'}
+                  </div>
                   <button
                     onClick={() => navigate(`/solve/${p.problemId}`)}
-                    className="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 text-sm font-semibold transition-all duration-150 shadow-md"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 text-sm font-semibold transition-all duration-150"
                   >
-                    Solve Problem
+                    Solve
                   </button>
                 </div>
               </div>
