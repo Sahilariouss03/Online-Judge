@@ -1,1 +1,0 @@
-#include <iostream>`nusing namespace std;`nint main() { int n; cin >> n; cout << "You entered: " << n << endl; return 0; }
