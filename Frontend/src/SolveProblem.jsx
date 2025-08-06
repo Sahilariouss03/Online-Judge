@@ -230,7 +230,7 @@ function SolveProblem() {
               <textarea
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="#include <iostream>\nusing namespace std;\n\nint main() {\n    int a = 10;\n    int b = 20;\n    cout << a + b << endl;\n    return 0;\n}"
+                placeholder="write your code here..."
                 className="w-full h-full p-4 border rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 bg-gray-50"
                 style={{ minHeight: '300px' }}
               />
