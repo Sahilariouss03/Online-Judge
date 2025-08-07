@@ -11,6 +11,7 @@ const cors = require('cors');
 const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
+const { generateReview } = require('./generateAIReview');
 
 dotenv.config();
 DBConnection();
@@ -47,16 +48,26 @@ app.use('/problems', problemRoutes);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
-app.post('/ai-review',async(req,res) => {
+app.post('/ai-review', async (req, res) => {
   const { code } = req.body;
-    if(code === undefined || code === null || code === ''){
-      return res.status(400).json({ message: 'Code is required' });
-    }
+  if (!code || code.trim() === '') {
+    return res.status(400).json({ message: 'Code is required' });
+  }
+  
   try {
-      const aiReview = await generateAIReview(code);
+    const aiReview = await generateReview(code);
+    return res.json({ review: aiReview });
   } catch (error) {
     console.error('Error during AI review:', error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    
+    // Return specific error messages to the client
+    if (error.message.includes('not configured')) {
+      return res.status(503).json({ message: 'AI review service is not configured. Please contact the administrator.' });
+    } else if (error.message.includes('temporarily unavailable')) {
+      return res.status(503).json({ message: 'AI review service is temporarily unavailable. Please try again later.' });
+    } else {
+      return res.status(500).json({ message: 'Failed to generate AI review. Please try again later.' });
+    }
   }
 });
 

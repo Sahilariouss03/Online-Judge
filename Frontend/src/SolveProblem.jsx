@@ -15,6 +15,8 @@ function SolveProblem() {
   const [submissionResult, setSubmissionResult] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [aiReview, setAiReview] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -104,6 +106,30 @@ function SolveProblem() {
     }
   };
 
+  const handleAIReview = async () => {
+    if (!code.trim()) {
+      setError("Please write some code before requesting AI review");
+      return;
+    }
+
+    setAiLoading(true);
+    setError("");
+    setAiReview("");
+
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/ai-review",
+        { code },
+        { withCredentials: true }
+      );
+      setAiReview(res.data.review);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to get AI review");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'accepted':
@@ -146,21 +172,7 @@ function SolveProblem() {
               >
                 ← Back to Problems
               </button>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {problem.name}
-              </h1>
             </div>
-            <span
-              className={`px-3 py-1 rounded-full font-medium text-sm ${
-                problem.difficulty === "easy"
-                  ? "bg-green-100 text-green-700"
-                  : problem.difficulty === "medium"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {problem.difficulty.toUpperCase()}
-            </span>
           </div>
         </div>
 
@@ -168,6 +180,26 @@ function SolveProblem() {
         <div className="flex-1 flex gap-4">
           {/* Left Side - Problem Statement */}
           <div className="w-1/2 bg-white rounded-2xl shadow-lg p-6 overflow-y-auto">
+            {/* Problem Header */}
+            <div className="mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h1 className="text-2xl font-bold text-gray-800">
+                  {problem.name}
+                </h1>
+                <span
+                  className={`px-3 py-1 rounded-full font-medium text-sm ${
+                    problem.difficulty === "easy"
+                      ? "bg-green-100 text-green-700"
+                      : problem.difficulty === "medium"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {problem.difficulty.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
             <h2 className="text-xl font-bold text-gray-800 mb-4">
               Problem Statement
             </h2>
@@ -178,47 +210,23 @@ function SolveProblem() {
 
           {/* Right Side - Code Editor */}
           <div className="w-1/2 bg-white rounded-2xl shadow-lg flex flex-col">
-            {/* Code Editor Header with Buttons */}
+            {/* Code Editor Header with Run Button Only */}
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-lg font-semibold text-gray-800">
                   Code Editor
                 </h2>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleRun}
-                    disabled={running}
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all duration-150 ${
-                      running
-                        ? "bg-yellow-400 cursor-not-allowed"
-                        : "bg-yellow-500 hover:bg-yellow-600 text-white"
-                    }`}
-                  >
-                    {running ? "Running..." : "Run Code"}
-                  </button>
-                  <button
-                    onClick={handleTestCustom}
-                    disabled={running}
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all duration-150 ${
-                      running
-                        ? "bg-blue-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 text-white"
-                    }`}
-                  >
-                    {running ? "Testing..." : "Test Custom"}
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all duration-150 ${
-                      loading
-                        ? "bg-blue-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700 text-white"
-                    }`}
-                  >
-                    {loading ? "Submitting..." : "Submit Solution"}
-                  </button>
-                </div>
+                <button
+                  onClick={handleRun}
+                  disabled={running}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all duration-150 ${
+                    running
+                      ? "bg-yellow-400 cursor-not-allowed"
+                      : "bg-yellow-500 hover:bg-yellow-600 text-white"
+                  }`}
+                >
+                  {running ? "Running..." : "Run Code"}
+                </button>
               </div>
               <div className="text-sm text-gray-600">
                 Write your C++ code below. Use standard input/output.
@@ -250,6 +258,60 @@ function SolveProblem() {
               />
             </div>
 
+            {/* Action Buttons Section */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleTestCustom}
+                  disabled={running}
+                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
+                    running
+                      ? "bg-blue-400 cursor-not-allowed text-white"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                  }`}
+                >
+                  {running ? "Testing..." : "Test Custom Input"}
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
+                    loading
+                      ? "bg-blue-400 cursor-not-allowed text-white"
+                      : "bg-blue-600 hover:bg-blue-700 text-white"
+                  }`}
+                >
+                  {loading ? "Submitting..." : "Submit Solution"}
+                </button>
+                <button
+                  onClick={handleAIReview}
+                  disabled={aiLoading}
+                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
+                    aiLoading
+                      ? "bg-purple-400 cursor-not-allowed text-white"
+                      : "bg-purple-600 hover:bg-purple-700 text-white"
+                  }`}
+                >
+                  {aiLoading ? "Analyzing..." : "AI Code Review"}
+                </button>
+                <button
+                  onClick={() => {
+                    setCode("");
+                    setCustomInput("");
+                    setOutput("");
+                    setError("");
+                    setAiReview("");
+                    setSubmissionResult(null);
+                    setShowResults(false);
+                    setShowPopup(false);
+                  }}
+                  className="px-4 py-3 rounded-lg font-semibold transition-all duration-150 bg-gray-500 hover:bg-gray-600 text-white"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+
             {/* Output Section */}
             {(output || error) && (
               <div className="p-4 border-t border-gray-200">
@@ -264,6 +326,19 @@ function SolveProblem() {
                   }`}
                 >
                   {error || output}
+                </div>
+              </div>
+            )}
+
+            {/* AI Review Section */}
+            {aiReview && (
+              <div className="p-4 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                  <span className="mr-2">🤖</span>
+                  AI Code Review:
+                </h3>
+                <div className="p-3 rounded-lg font-mono text-sm whitespace-pre-wrap bg-purple-50 text-purple-800 border border-purple-200">
+                  {aiReview}
                 </div>
               </div>
             )}

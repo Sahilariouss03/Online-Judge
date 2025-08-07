@@ -12,6 +12,7 @@ const problemSchema = new mongoose.Schema({
   }]
 });
 
-problemSchema.index({ problemId: 1 });
+// Remove the duplicate index declaration
+// problemSchema.index({ problemId: 1 });
 
 module.exports = mongoose.model('Problem', problemSchema);
