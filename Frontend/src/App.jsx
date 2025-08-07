@@ -64,7 +64,6 @@ function ProfileDropdown({ setIsLoggedIn }) {
 
   const handleLogout = async () => {
     try {
-      // Call logout endpoint to clear cookie
       await fetch("http://localhost:3000/logout", {
         method: "POST",
         credentials: "include"
@@ -73,7 +72,6 @@ function ProfileDropdown({ setIsLoggedIn }) {
       console.error("Logout error:", error);
     }
     
-    // Clear localStorage
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("user");
     setIsLoggedIn(false);
@@ -85,7 +83,6 @@ function ProfileDropdown({ setIsLoggedIn }) {
     setError("");
     setSuccess("");
     try {
-      // Only send changed fields
       const updateData = {};
       if (firstName && firstName !== originalUser.firstName)
         updateData.firstName = firstName;
@@ -98,7 +95,7 @@ function ProfileDropdown({ setIsLoggedIn }) {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Send cookies
+        credentials: "include",
         body: JSON.stringify(updateData),
       });
       const data = await res.json();
@@ -117,7 +114,7 @@ function ProfileDropdown({ setIsLoggedIn }) {
     try {
       const res = await fetch("http://localhost:3000/users/profile", {
         method: "DELETE",
-        credentials: "include", // Send cookies
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to delete profile");
       setSuccess("Profile deleted!");
@@ -173,7 +170,6 @@ function ProfileDropdown({ setIsLoggedIn }) {
           </button>
         </div>
       )}
-      {/* Edit Profile Modal */}
       {showEdit && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <form
@@ -227,7 +223,6 @@ function ProfileDropdown({ setIsLoggedIn }) {
           </form>
         </div>
       )}
-      {/* Delete Profile Modal with confirmation */}
       {showDelete && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <div className="bg-white p-8 rounded shadow-md w-80 relative">
@@ -299,10 +294,8 @@ function ProfilePage() {
   );
 }
 
-// Extract the dropdown button for reuse
 function ProfileDropdownButton() {
-  // This is a wrapper to use the same dropdown as in the top bar, but without the name
-  const [dummy, setDummy] = useState(false); // just to force re-render on logout
+  const [dummy, setDummy] = useState(false);
   return <ProfileDropdown setIsLoggedIn={() => setDummy((d) => !d)} />;
 }
 
@@ -326,13 +319,11 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
     isLoggedIn && !["/", "/login", "/register"].includes(location.pathname);
   return (
     <>
-      {/* Fixed header for profile bar */}
       {showDropdown && (
         <header className="fixed top-0 left-0 w-full h-16 bg-white shadow z-50 flex items-center justify-end pr-8">
           <ProfileBar setIsLoggedIn={setIsLoggedIn} />
         </header>
       )}
-      {/* Main content with top margin to avoid overlap */}
       <div className={showDropdown ? "pt-20" : ""}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -347,7 +338,6 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
   );
 }
 
-// New wrapper for profile bar (name + dropdown)
 function ProfileBar({ setIsLoggedIn }) {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   return (

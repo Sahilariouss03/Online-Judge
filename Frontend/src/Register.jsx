@@ -17,10 +17,9 @@ function Register() {
     setSuccess('');
     try {
       const res = await axios.post('http://localhost:3000/register', { firstName, LastName, email, password }, {
-        withCredentials: true // Enable cookies
+        withCredentials: true
       });
       
-      // Store user info in localStorage (but not the token)
       localStorage.setItem('user', JSON.stringify(res.data.user));
       setSuccess('Registration successful! Redirecting...');
       setTimeout(() => navigate('/problems'), 1000);

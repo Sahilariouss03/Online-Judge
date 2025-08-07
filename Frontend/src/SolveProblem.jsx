@@ -46,7 +46,17 @@ function SolveProblem() {
         { code, input: customInput },
         { withCredentials: true }
       );
-      setOutput(res.data.output || "Code executed successfully!");
+      
+      let outputMessage = res.data.output || "Code executed successfully!";
+      if (res.data.inputSource === 'first_test_case') {
+        outputMessage = `Using first test case input: ${res.data.input || '(empty)'}\n\nOutput:\n${outputMessage}`;
+      } else if (res.data.inputSource === 'custom') {
+        outputMessage = `Using custom input: ${res.data.input || '(empty)'}\n\nOutput:\n${outputMessage}`;
+      } else {
+        outputMessage = `No input provided\n\nOutput:\n${outputMessage}`;
+      }
+      
+      setOutput(outputMessage);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to run code");
     } finally {
@@ -91,13 +101,12 @@ function SolveProblem() {
         { withCredentials: true }
       );
       
-      // Handle custom input case
       if (res.data.customInput) {
         setOutput(`Custom Input: ${res.data.input || '(empty)'}\n\nOutput:\n${res.data.output || "Code executed successfully!"}`);
       } else {
         setSubmissionResult(res.data);
         setShowResults(true);
-        setShowPopup(true); // Show popup for test case results
+        setShowPopup(true);
       }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to submit solution");
@@ -162,10 +171,10 @@ function SolveProblem() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4">
       <div className="max-w-7xl mx-auto h-screen flex flex-col">
-        {/* Header */}
         <div className="bg-white rounded-t-2xl shadow-lg p-4 mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-blue-600">AlgoArena</h1>
               <button
                 onClick={() => navigate("/problems")}
                 className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-semibold transition-all duration-150"
@@ -176,11 +185,8 @@ function SolveProblem() {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 flex gap-4">
-          {/* Left Side - Problem Statement */}
           <div className="w-1/2 bg-white rounded-2xl shadow-lg p-6 overflow-y-auto">
-            {/* Problem Header */}
             <div className="mb-6 pb-4 border-b border-gray-200">
               <div className="flex items-center justify-between mb-3">
                 <h1 className="text-2xl font-bold text-gray-800">
@@ -206,34 +212,65 @@ function SolveProblem() {
             <div className="text-gray-700 whitespace-pre-line leading-relaxed">
               {problem.statement}
             </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className={`w-full px-6 py-3 rounded-lg font-semibold transition-all duration-150 ${
+                  loading
+                    ? "bg-blue-400 cursor-not-allowed text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+              >
+                {loading ? "Submitting..." : "Submit Solution"}
+              </button>
+            </div>
           </div>
 
-          {/* Right Side - Code Editor */}
           <div className="w-1/2 bg-white rounded-2xl shadow-lg flex flex-col">
-            {/* Code Editor Header with Run Button Only */}
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-lg font-semibold text-gray-800">
                   Code Editor
                 </h2>
-                <button
-                  onClick={handleRun}
-                  disabled={running}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-all duration-150 ${
-                    running
-                      ? "bg-yellow-400 cursor-not-allowed"
-                      : "bg-yellow-500 hover:bg-yellow-600 text-white"
-                  }`}
-                >
-                  {running ? "Running..." : "Run Code"}
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleRun}
+                    disabled={running}
+                    className={`px-6 py-2 rounded-lg font-semibold transition-all duration-150 ${
+                      running
+                        ? "bg-yellow-400 cursor-not-allowed"
+                        : "bg-yellow-500 hover:bg-yellow-600 text-white"
+                    }`}
+                  >
+                    {running ? "Running..." : "Run Code"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCode("");
+                      setCustomInput("");
+                      setOutput("");
+                      setError("");
+                      setAiReview("");
+                      setSubmissionResult(null);
+                      setShowResults(false);
+                      setShowPopup(false);
+                    }}
+                    className="px-4 py-2 rounded-lg font-semibold transition-all duration-150 bg-gray-500 hover:bg-gray-600 text-white"
+                  >
+                    Clear All
+                  </button>
+                </div>
               </div>
               <div className="text-sm text-gray-600">
                 Write your C++ code below. Use standard input/output.
               </div>
+              <div className="text-xs text-blue-600 mt-1">
+                Happy Coding!
+              </div>
             </div>
 
-            {/* Code Editor */}
             <div className="flex-1 p-4">
               <textarea
                 value={code}
@@ -244,75 +281,6 @@ function SolveProblem() {
               />
             </div>
 
-            {/* Custom Input Section */}
-            <div className="p-4 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Custom Input:
-              </h3>
-              <textarea
-                value={customInput}
-                onChange={(e) => setCustomInput(e.target.value)}
-                placeholder="Enter input for your program (if any)"
-                className="w-full h-full p-3 border rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 bg-gray-50"
-                style={{ minHeight: '100px' }}
-              />
-            </div>
-
-            {/* Action Buttons Section */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={handleTestCustom}
-                  disabled={running}
-                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
-                    running
-                      ? "bg-blue-400 cursor-not-allowed text-white"
-                      : "bg-green-600 hover:bg-green-700 text-white"
-                  }`}
-                >
-                  {running ? "Testing..." : "Test Custom Input"}
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
-                    loading
-                      ? "bg-blue-400 cursor-not-allowed text-white"
-                      : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
-                >
-                  {loading ? "Submitting..." : "Submit Solution"}
-                </button>
-                <button
-                  onClick={handleAIReview}
-                  disabled={aiLoading}
-                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
-                    aiLoading
-                      ? "bg-purple-400 cursor-not-allowed text-white"
-                      : "bg-purple-600 hover:bg-purple-700 text-white"
-                  }`}
-                >
-                  {aiLoading ? "Analyzing..." : "AI Code Review"}
-                </button>
-                <button
-                  onClick={() => {
-                    setCode("");
-                    setCustomInput("");
-                    setOutput("");
-                    setError("");
-                    setAiReview("");
-                    setSubmissionResult(null);
-                    setShowResults(false);
-                    setShowPopup(false);
-                  }}
-                  className="px-4 py-3 rounded-lg font-semibold transition-all duration-150 bg-gray-500 hover:bg-gray-600 text-white"
-                >
-                  Clear All
-                </button>
-              </div>
-            </div>
-
-            {/* Output Section */}
             {(output || error) && (
               <div className="p-4 border-t border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -330,7 +298,6 @@ function SolveProblem() {
               </div>
             )}
 
-            {/* AI Review Section */}
             {aiReview && (
               <div className="p-4 border-t border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center">
@@ -343,7 +310,49 @@ function SolveProblem() {
               </div>
             )}
 
-            {/* Submission Results Section */}
+            <div className="p-4 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Custom Input:
+              </h3>
+              <div className="text-xs text-gray-600 mb-2">
+                Enter custom input for your program.
+              </div>
+              <textarea
+                value={customInput}
+                onChange={(e) => setCustomInput(e.target.value)}
+                placeholder="test custom inputs for your program..."
+                className="w-full h-full p-3 border rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 bg-gray-50"
+                style={{ minHeight: '100px' }}
+              />
+            </div>
+
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleTestCustom}
+                  disabled={running}
+                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
+                    running
+                      ? "bg-blue-400 cursor-not-allowed text-white"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                  }`}
+                >
+                  {running ? "Testing..." : "Test Custom Input"}
+                </button>
+                <button
+                  onClick={handleAIReview}
+                  disabled={aiLoading}
+                  className={`px-4 py-3 rounded-lg font-semibold transition-all duration-150 ${
+                    aiLoading
+                      ? "bg-purple-400 cursor-not-allowed text-white"
+                      : "bg-purple-600 hover:bg-purple-700 text-white"
+                  }`}
+                >
+                  {aiLoading ? "Analyzing..." : "AI Code Review"}
+                </button>
+              </div>
+            </div>
+
             {showResults && submissionResult && (
               <div className="p-4 border-t border-gray-200">
                 <div className="flex items-center justify-between mb-4">
@@ -357,7 +366,6 @@ function SolveProblem() {
                   </div>
                 </div>
                 
-                {/* Summary */}
                 <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">
@@ -369,7 +377,6 @@ function SolveProblem() {
                   </div>
                 </div>
 
-                {/* Test Case Results */}
                 <div className="space-y-3">
                   {submissionResult.results.map((result, index) => (
                     <div key={index} className={`p-3 rounded-lg border ${
@@ -421,11 +428,9 @@ function SolveProblem() {
         </div>
       </div>
 
-      {/* Results Popup Modal */}
       {showPopup && submissionResult && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-800">Submission Results</h2>
@@ -437,7 +442,6 @@ function SolveProblem() {
                 </button>
               </div>
               
-              {/* Overall Status */}
               <div className="mt-4 flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <span className={`px-4 py-2 rounded-full font-bold text-lg ${getStatusColor(submissionResult.status)}`}>
@@ -456,7 +460,6 @@ function SolveProblem() {
               </div>
             </div>
 
-            {/* Test Cases */}
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Test Case Details</h3>
               <div className="space-y-4">
@@ -517,7 +520,6 @@ function SolveProblem() {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="p-6 border-t border-gray-200 bg-gray-50">
               <div className="flex justify-between items-center">
                 <button

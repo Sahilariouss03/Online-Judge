@@ -61,16 +61,36 @@ router.post('/:problemId/run', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Code is required' });
     }
 
+    // Get the problem to access test cases
+    const problem = await Problem.findOne({ problemId: req.params.problemId });
+    if (!problem) {
+      return res.status(404).json({ message: 'Problem not found' });
+    }
+
+    // Determine input to use: custom input first, then first test case, then empty
+    let inputToUse = '';
+    let inputSource = 'empty';
+    
+    if (input && input.trim() !== '') {
+      inputToUse = input;
+      inputSource = 'custom';
+    } else if (problem.testCases && problem.testCases.length > 0) {
+      inputToUse = problem.testCases[0].input;
+      inputSource = 'first_test_case';
+    }
+
     // Send code to compiler service
     const compilerResponse = await axios.post('http://localhost:5000/run', {
       code,
-      input: input || '',
+      input: inputToUse,
       language: 'cpp'
     });
 
     res.json({ 
       message: 'Code executed successfully',
-      output: compilerResponse.data.output 
+      output: compilerResponse.data.output,
+      input: inputToUse,
+      inputSource: inputSource
     });
   } catch (error) {
     console.error('Error running code:', error);

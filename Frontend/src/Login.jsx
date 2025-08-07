@@ -17,13 +17,11 @@ function Login() {
     try {
       const url = adminMode ? 'http://localhost:3000/login/admin' : 'http://localhost:3000/login';
       const res = await axios.post(url, { email, password }, {
-        withCredentials: true // Enable cookies
+        withCredentials: true
       });
       
-      // Store user info in localStorage (but not the token)
       localStorage.setItem('user', JSON.stringify(res.data.user));
       
-      // Store admin status if admin login
       if (adminMode) {
         localStorage.setItem('isAdmin', 'true');
       }
@@ -44,7 +42,6 @@ function Login() {
         <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full mb-4 p-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-300" required />
         <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full mb-4 p-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-300" required />
         
-        {/* Admin Toggle */}
         <div className="w-full mb-6 flex items-center justify-center">
           <label className="flex items-center cursor-pointer">
             <input

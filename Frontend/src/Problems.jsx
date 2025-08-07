@@ -173,7 +173,6 @@ function Problems() {
             <option value="medium">Medium</option>
             <option value="hard">Hard</option>
           </select>
-          {/* Test Cases Section */}
           <div className="border-t pt-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-semibold text-gray-700">Test Cases</h3>
@@ -241,7 +240,6 @@ function Problems() {
         </form>
       )}
 
-      {/* Edit Problem Form */}
       {showEdit && isAdmin && editingProblem && (
         <form
           onSubmit={handleEdit}
@@ -298,7 +296,6 @@ function Problems() {
             <option value="hard">Hard</option>
           </select>
 
-          {/* Test Cases Section */}
           <div className="border-t pt-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-semibold text-gray-700">Test Cases</h3>
