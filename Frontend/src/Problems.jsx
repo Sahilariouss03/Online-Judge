@@ -122,6 +122,18 @@ function Problems() {
         <span className="text-xl font-bold text-blue-600 tracking-wide">AlgoArena</span>
       </div>
 
+      {/* Login Button - Top Right */}
+      {!user.email && (
+        <div className="absolute top-4 right-4 z-50">
+          <button
+            onClick={() => navigate('/login')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold text-sm transition-all duration-150 shadow-md"
+          >
+            Login
+          </button>
+        </div>
+      )}
+
       {/* Welcome Message */}
       <div className="max-w-4xl mx-auto mb-8 pt-16">
         <div className="bg-gradient-to-r from-blue-200 via-purple-100 to-pink-100 rounded-xl shadow p-6 flex items-center">

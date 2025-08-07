@@ -67,6 +67,16 @@ function Login() {
             {adminMode ? 'Admin Login' : 'Login'}
           </button>
         </form>
+        
+        <div className="mt-6 text-center">
+          <span className="text-gray-600">New user? </span>
+          <button 
+            onClick={() => navigate('/register')}
+            className="text-blue-600 hover:text-blue-800 font-semibold underline"
+          >
+            Register
+          </button>
+        </div>
       </div>
     </div>
   );

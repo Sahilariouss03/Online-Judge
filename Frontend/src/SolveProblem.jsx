@@ -32,6 +32,10 @@ function SolveProblem() {
       setError("Please enter some code");
       return;
     }
+    if (!user.email) {
+      setError("Login to submit code");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -52,7 +56,11 @@ function SolveProblem() {
       
       setOutput(outputMessage);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to run code");
+      if (err.response?.data?.message?.includes('token')) {
+        setError("Login to submit code");
+      } else {
+        setError(err.response?.data?.message || "Failed to run code");
+      }
     } finally {
       setLoading(false);
     }
@@ -67,6 +75,10 @@ function SolveProblem() {
       setError("Please provide custom input");
       return;
     }
+    if (!user.email) {
+      setError("Login to submit code");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -76,7 +88,11 @@ function SolveProblem() {
       }, { withCredentials: true });
       setOutput(`Custom Input Test:\n\nInput:\n${input}\n\nOutput:\n${res.data.output}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to test with custom input");
+      if (err.response?.data?.message?.includes('token')) {
+        setError("Login to submit code");
+      } else {
+        setError(err.response?.data?.message || "Failed to test with custom input");
+      }
     } finally {
       setLoading(false);
     }
@@ -87,6 +103,10 @@ function SolveProblem() {
       setError("Please enter some code for AI review");
       return;
     }
+    if (!user.email) {
+      setError("Login to submit code");
+      return;
+    }
     setAiLoading(true);
     setError("");
     try {
@@ -95,7 +115,11 @@ function SolveProblem() {
       }, { withCredentials: true });
       setAiReview(res.data.review);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to generate AI review");
+      if (err.response?.data?.message?.includes('token')) {
+        setError("Login to submit code");
+      } else {
+        setError(err.response?.data?.message || "Failed to generate AI review");
+      }
     } finally {
       setAiLoading(false);
     }
@@ -106,6 +130,10 @@ function SolveProblem() {
       setError("Please enter some code");
       return;
     }
+    if (!user.email) {
+      setError("Login to submit code");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -114,7 +142,11 @@ function SolveProblem() {
       }, { withCredentials: true });
       setOutput(`Submission Result:\n\n${res.data.message}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to submit solution");
+      if (err.response?.data?.message?.includes('token')) {
+        setError("Login to submit code");
+      } else {
+        setError(err.response?.data?.message || "Failed to submit solution");
+      }
     } finally {
       setLoading(false);
     }
@@ -132,8 +164,26 @@ function SolveProblem() {
   if (!problem) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 font-sans">
-      <div className="max-w-7xl mx-auto p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 font-sans relative">
+      {/* Center Logo and Name */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center z-50 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
+        <img src="/src/assets/logo.png" alt="AlgoArena Logo" className="w-8 h-8 mr-2" />
+        <span className="text-xl font-bold text-blue-600 tracking-wide">AlgoArena</span>
+      </div>
+
+      {/* Login Button - Top Right */}
+      {!user.email && (
+        <div className="absolute top-4 right-4 z-50">
+          <button
+            onClick={() => navigate('/login')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold text-sm transition-all duration-150 shadow-md"
+          >
+            Login
+          </button>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto p-6 pt-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
           <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col">
             <div className="mb-4">

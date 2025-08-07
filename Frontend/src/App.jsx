@@ -17,7 +17,7 @@ function Home() {
     <div className="fixed top-0 left-0 w-full h-full m-0 p-0 font-sans text-white bg-gradient-to-br from-blue-400 via-purple-300 to-pink-200">
       <div className="flex flex-col items-center justify-center h-full space-y-6">
         <h1 className="text-5xl font-extrabold mb-8 drop-shadow-lg">
-          Welcome to the Online Judge App
+          Welcome to the Algo Arena
         </h1>
         <div className="space-x-4">
           <Link
