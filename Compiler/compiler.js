@@ -4,7 +4,26 @@ const generateFile = require('./generateFile');
 const execute = require('./Execute');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 
+// Configure CORS
+app.use(cors({
+    origin: function(origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'https://online-judge-wzu9.vercel.app',
+            'https://online-judge-wzu9-rj1alkt30-sahilariouss03s-projects.vercel.app'
+        ];
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -15,6 +34,10 @@ if (!fs.existsSync(outputPath)) {
 }
 app.get('/',(req,res)=>{
     res.send("Hello World from Compiler");
+});
+
+app.get('/health',(req,res)=>{
+    res.status(200).json({ status: 'healthy' });
 });
 
 app.post('/run',async(req,res) =>{
