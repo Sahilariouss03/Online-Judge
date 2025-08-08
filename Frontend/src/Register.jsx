@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl, getAxiosConfig } from './utils/api';
 
 function Register() {
   const [firstName, setFirstName] = useState('');
@@ -28,17 +29,10 @@ function Register() {
     }
 
     try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, '');
-      console.log('Registering with URL:', `${baseUrl}/register`);
-      
-      const res = await axios.post(`${baseUrl}/register`, 
+      const res = await axios.post(
+        getApiUrl('register'),
         { firstName, LastName, email, password },
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        getAxiosConfig()
       );
       
       if (res.data.user) {

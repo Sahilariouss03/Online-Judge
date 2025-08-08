@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl, getAxiosConfig } from './utils/api';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -15,11 +16,8 @@ function Login() {
     setError('');
     setSuccess('');
     try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL;
-      const url = adminMode ? `${baseUrl}/login/admin` : `${baseUrl}/login`;
-      const res = await axios.post(url, { email, password }, {
-        withCredentials: true
-      });
+      const url = getApiUrl(adminMode ? 'login/admin' : 'login');
+      const res = await axios.post(url, { email, password }, getAxiosConfig());
       
       localStorage.setItem('user', JSON.stringify(res.data.user));
       

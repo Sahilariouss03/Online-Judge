@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl, getAxiosConfig } from "./utils/api";
 
 function Problems() {
   const navigate = useNavigate();
@@ -22,10 +23,10 @@ function Problems() {
 
   const fetchProblems = async () => {
     try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL;
-      const res = await axios.get(`${baseUrl}/problems`);
+      const res = await axios.get(getApiUrl('problems'));
       setProblems(res.data.problems || []);
     } catch (err) {
+      console.error('Error fetching problems:', err);
       setError("Failed to fetch problems");
     }
   };

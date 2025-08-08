@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl, getAxiosConfig } from "./utils/api";
 import TestCaseResults from "./TestCaseResults";
 
 function SolveProblem() {
