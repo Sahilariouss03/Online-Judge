@@ -1,8 +1,8 @@
-impimport { getApiUrl, getAxiosConfig } from './utils/api';
-import assets from './utils/assets';rt React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl, getAxiosConfig } from "./utils/api";
+import assets from './utils/assets';
 import TestCaseResults from "./TestCaseResults";
 
 function SolveProblem() {
