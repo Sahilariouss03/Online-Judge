@@ -1,8 +1,8 @@
-impimport { getApiUrl, getAxiosConfig } from './utils/api';
-import assets from './utils/assets';rt React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl, getAxiosConfig } from "./utils/api";
+import assets from './utils/assets';
 
 function Problems() {
   const navigate = useNavigate();
