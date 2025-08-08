@@ -31,17 +31,31 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser()); // Parse cookies
-// CORS configuration for production
+// CORS configuration for all environments
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? process.env.FRONTEND_URL // Your frontend URL in production
-        : "http://localhost:5173", // Development frontend URL
+    origin: function(origin, callback) {
+      // List of allowed origins
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'https://online-judge-wzu9.vercel.app',
+        'https://online-judge-wzu9-e6dkzk402-sahilariouss03s-projects.vercel.app'
+      ];
+      
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+      
+      return callback(null, true);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    maxAge: 86400, // 24 hours
+    maxAge: 86400 // 24 hours
   })
 );
 
