@@ -16,7 +16,8 @@ function Register() {
     setError('');
     setSuccess('');
     try {
-      const res = await axios.post('http://localhost:3000/register', { firstName, LastName, email, password }, {
+      const baseUrl = import.meta.env.VITE_BACKEND_URL;
+      const res = await axios.post(`${baseUrl}/register`, { firstName, LastName, email, password }, {
         withCredentials: true
       });
       
