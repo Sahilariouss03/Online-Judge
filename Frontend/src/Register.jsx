@@ -15,17 +15,42 @@ function Register() {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    // Validate input
+    if (!firstName || !LastName || !email || !password) {
+      setError('All fields are required');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     try {
       const baseUrl = import.meta.env.VITE_BACKEND_URL;
-      const res = await axios.post(`${baseUrl}/register`, { firstName, LastName, email, password }, {
-        withCredentials: true
-      });
+      console.log('Registering with URL:', `${baseUrl}/register`);
       
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      setSuccess('Registration successful! Redirecting...');
-      setTimeout(() => navigate('/problems'), 1000);
+      const res = await axios.post(`${baseUrl}/register`, 
+        { firstName, LastName, email, password },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (res.data.user) {
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        setSuccess('Registration successful! Redirecting...');
+        setTimeout(() => navigate('/problems'), 1000);
+      } else {
+        setError('Registration failed: No user data received');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     }
   };
 

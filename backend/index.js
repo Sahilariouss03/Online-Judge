@@ -45,6 +45,57 @@ app.use(
   })
 );
 
+// Register route
+app.post("/register", async (req, res) => {
+  try {
+    const { firstName, LastName, email, password } = req.body;
+    
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Create new user
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user = new User({
+      firstName,
+      LastName,
+      email,
+      password: hashedPassword
+    });
+
+    await user.save();
+
+    // Create JWT token
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // Set token in cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 3600000 // 1 hour
+    });
+
+    // Return user without password
+    const userWithoutPassword = { ...user.toObject() };
+    delete userWithoutPassword.password;
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: userWithoutPassword
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Server error during registration" });
+  }
+});
+
 // Routes
 app.use("/users", userRoutes);
 app.use("/problems", problemRoutes);
