@@ -15,7 +15,8 @@ function Login() {
     setError('');
     setSuccess('');
     try {
-      const url = adminMode ? 'http://localhost:3000/login/admin' : 'http://localhost:3000/login';
+      const baseUrl = import.meta.env.VITE_BACKEND_URL;
+      const url = adminMode ? `${baseUrl}/login/admin` : `${baseUrl}/login`;
       const res = await axios.post(url, { email, password }, {
         withCredentials: true
       });

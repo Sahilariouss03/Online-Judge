@@ -22,7 +22,8 @@ function Problems() {
 
   const fetchProblems = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/problems");
+      const baseUrl = import.meta.env.VITE_BACKEND_URL;
+      const res = await axios.get(`${baseUrl}/problems`);
       setProblems(res.data.problems || []);
     } catch (err) {
       setError("Failed to fetch problems");
@@ -36,7 +37,8 @@ function Problems() {
   const handleAddProblem = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3000/problems", newProblem, {
+      const baseUrl = import.meta.env.VITE_BACKEND_URL;
+      await axios.post(`${baseUrl}/problems`, newProblem, {
         withCredentials: true,
       });
       setShowAdd(false);

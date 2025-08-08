@@ -57,7 +57,8 @@ function SolveProblem() {
   useEffect(() => {
     const fetchProblem = async () => {
       try {
-        const res = await axios.get(`http://localhost:3000/problems/${problemId}`);
+        const baseUrl = import.meta.env.VITE_BACKEND_URL;
+        const res = await axios.get(`${baseUrl}/problems/${problemId}`);
         setProblem(res.data.problem);
       } catch (err) {
         setError("Failed to fetch problem");
