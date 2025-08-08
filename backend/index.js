@@ -31,6 +31,23 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser()); // Parse cookies
+
+// Configure cookie settings
+app.use((req, res, next) => {
+  res.cookie = res.cookie.bind(res);
+  const originalCookie = res.cookie;
+  res.cookie = function (name, value, options = {}) {
+    return originalCookie.call(this, name, value, {
+      ...options,
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true,
+      path: '/',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+  };
+  next();
+});
 // CORS configuration for all environments
 app.use(
   cors({
@@ -55,10 +72,8 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
-    exposedHeaders: ["Access-Control-Allow-Origin"],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    exposedHeaders: ["set-cookie"],
     maxAge: 86400 // 24 hours
   })
 );

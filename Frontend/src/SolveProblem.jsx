@@ -80,10 +80,15 @@ function SolveProblem() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post(`http://localhost:3000/problems/${problemId}/run`, {
+      const res = await axios.post(`${import.meta.env.VITE_COMPILER_URL}/problems/${problemId}/run`, {
         code,
         input: input.trim()
-      }, { withCredentials: true });
+      }, { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
       setOutput(res.data.output);
     } catch (err) {
