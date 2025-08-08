@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { assets } from './utils/assets';
+import assets from './utils/assets';
 import { getApiUrl, getAxiosConfig } from './utils/api';
 
 function Register() {

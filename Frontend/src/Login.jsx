@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getApiUrl, getAxiosConfig } from './utils/api';
-import { assets } from './utils/assets';
+import assets from './utils/assets';
 
 function Login() {
   const [email, setEmail] = useState('');
