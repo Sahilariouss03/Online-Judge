@@ -28,7 +28,7 @@ function Register() {
     }
 
     try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL;
+      const baseUrl = import.meta.env.VITE_BACKEND_URL.replace(/\/$/, '');
       console.log('Registering with URL:', `${baseUrl}/register`);
       
       const res = await axios.post(`${baseUrl}/register`, 
