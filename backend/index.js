@@ -55,7 +55,10 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+    exposedHeaders: ["Access-Control-Allow-Origin"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
     maxAge: 86400 // 24 hours
   })
 );
