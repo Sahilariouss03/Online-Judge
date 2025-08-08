@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+impimport { getApiUrl, getAxiosConfig } from './utils/api';
+import assets from './utils/assets';rt React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl, getAxiosConfig } from "./utils/api";
@@ -23,7 +24,7 @@ function Problems() {
 
   const fetchProblems = async () => {
     try {
-      const res = await axios.get(getApiUrl('problems'));
+      const res = await axios.get(getApiUrl('problems'), getAxiosConfig());
       setProblems(res.data.problems || []);
     } catch (err) {
       console.error('Error fetching problems:', err);
@@ -116,7 +117,7 @@ function Problems() {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 font-sans relative">
       {/* Center Logo and Name */}
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center z-50 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
-        <img src="/src/assets/logo.png" alt="AlgoArena Logo" className="w-8 h-8 mr-2" />
+        <img src={assets.logo} alt="AlgoArena Logo" className="w-8 h-8 mr-2" />
         <span className="text-xl font-bold text-blue-600 tracking-wide">AlgoArena</span>
       </div>
 
