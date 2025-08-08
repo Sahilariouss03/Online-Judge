@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { assets } from './utils/assets';
 import { getApiUrl, getAxiosConfig } from './utils/api';
 
 function Register() {
@@ -53,7 +54,7 @@ function Register() {
       <div className="bg-white p-10 rounded-2xl shadow-xl w-96 flex flex-col items-center">
         <div className="flex items-center justify-center mb-6">
           <img 
-            src="/src/assets/logo.png" 
+            src={assets.logo} 
             alt="AlgoArena Logo" 
             className="w-12 h-12 mr-3"
           />

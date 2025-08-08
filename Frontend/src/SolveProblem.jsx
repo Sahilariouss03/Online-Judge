@@ -58,10 +58,10 @@ function SolveProblem() {
   useEffect(() => {
     const fetchProblem = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_BACKEND_URL;
-        const res = await axios.get(`${baseUrl}/problems/${problemId}`);
+        const res = await axios.get(getApiUrl(`problems/${problemId}`), getAxiosConfig());
         setProblem(res.data.problem);
       } catch (err) {
+        console.error('Error fetching problem:', err);
         setError("Failed to fetch problem");
       }
     };
@@ -143,9 +143,11 @@ function SolveProblem() {
     setAiLoading(true);
     setError("");
     try {
-      const res = await axios.post("http://localhost:3000/ai-review", {
-        code: code
-      }, { withCredentials: true });
+      const res = await axios.post(
+        getApiUrl('ai-review'),
+        { code },
+        getAxiosConfig()
+      );
       setAiReview(res.data.review);
     } catch (err) {
       if (err.response?.data?.message?.includes('token')) {
@@ -170,9 +172,11 @@ function SolveProblem() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post(`http://localhost:3000/problems/${problemId}/submit`, {
-        code
-      }, { withCredentials: true });
+      const res = await axios.post(
+        getApiUrl(`problems/${problemId}/submit`),
+        { code },
+        getAxiosConfig()
+      );
       
       // Store test results and show modal
       if (res.data.results) {

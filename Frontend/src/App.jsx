@@ -11,6 +11,7 @@ import Login from "./Login.jsx";
 import Register from "./Register.jsx";
 import Problems from "./Problems.jsx";
 import SolveProblem from "./SolveProblem.jsx";
+import { getApiUrl, getAxiosConfig } from "./utils/api";
 
 function Home() {
   return (
@@ -64,7 +65,7 @@ function ProfileDropdown({ setIsLoggedIn }) {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3000/logout", {
+      await fetch(getApiUrl('logout'), {
         method: "POST",
         credentials: "include"
       });
@@ -90,7 +91,7 @@ function ProfileDropdown({ setIsLoggedIn }) {
         updateData.LastName = LastName;
       if (email && email !== originalUser.email) updateData.email = email;
       if (password) updateData.password = password;
-      const res = await fetch("http://localhost:3000/users/profile", {
+      const res = await fetch(getApiUrl('users/profile'), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +113,7 @@ function ProfileDropdown({ setIsLoggedIn }) {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch("http://localhost:3000/users/profile", {
+      const res = await fetch(getApiUrl('users/profile'), {
         method: "DELETE",
         credentials: "include",
       });

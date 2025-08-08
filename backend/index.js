@@ -50,7 +50,7 @@ app.use(
         return callback(new Error(msg), false);
       }
       
-      return callback(null, true);
+      return callback(null, origin);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -58,6 +58,16 @@ app.use(
     maxAge: 86400 // 24 hours
   })
 );
+
+// Mount routes
+app.use("/users", userRoutes);
+app.use("/problems", problemRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
 
 // Register route
 app.post("/register", async (req, res) => {

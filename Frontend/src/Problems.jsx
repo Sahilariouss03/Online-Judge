@@ -38,10 +38,7 @@ function Problems() {
   const handleAddProblem = async (e) => {
     e.preventDefault();
     try {
-      const baseUrl = import.meta.env.VITE_BACKEND_URL;
-      await axios.post(`${baseUrl}/problems`, newProblem, {
-        withCredentials: true,
-      });
+      await axios.post(getApiUrl('problems'), newProblem, getAxiosConfig());
       setShowAdd(false);
       setNewProblem({
         problemId: "",
@@ -90,7 +87,7 @@ function Problems() {
     e.preventDefault();
     try {
       await axios.put(
-        `http://localhost:3000/problems/${editingProblem.problemId}`,
+        getApiUrl(`problems/${editingProblem.problemId}`),
         editingProblem,
         { withCredentials: true }
       );
@@ -106,9 +103,7 @@ function Problems() {
     if (!window.confirm("Are you sure you want to delete this problem?"))
       return;
     try {
-      await axios.delete(`http://localhost:3000/problems/${problemId}`, {
-        withCredentials: true,
-      });
+      await axios.delete(getApiUrl(`problems/${problemId}`), getAxiosConfig());
       fetchProblems();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete problem");
