@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import TestCaseResults from "./TestCaseResults";
 
 function SolveProblem() {
   const { problemId } = useParams();
@@ -13,7 +14,45 @@ function SolveProblem() {
   const [error, setError] = useState("");
   const [aiReview, setAiReview] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [testResults, setTestResults] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // Load saved code from localStorage on component mount
+  useEffect(() => {
+    const savedCode = localStorage.getItem(`code_${problemId}`);
+    const savedInput = localStorage.getItem(`input_${problemId}`);
+    if (savedCode) {
+      setCode(savedCode);
+    }
+    if (savedInput) {
+      setInput(savedInput);
+    }
+  }, [problemId]);
+
+  // Save code to localStorage whenever it changes
+  useEffect(() => {
+    if (code.trim()) {
+      localStorage.setItem(`code_${problemId}`, code);
+      setIsSaved(true);
+      // Hide saved indicator after 2 seconds
+      setTimeout(() => setIsSaved(false), 2000);
+    } else {
+      // Remove empty code from localStorage
+      localStorage.removeItem(`code_${problemId}`);
+    }
+  }, [code, problemId]);
+
+  // Save input to localStorage whenever it changes
+  useEffect(() => {
+    if (input.trim()) {
+      localStorage.setItem(`input_${problemId}`, input);
+    } else {
+      // Remove empty input from localStorage
+      localStorage.removeItem(`input_${problemId}`);
+    }
+  }, [input, problemId]);
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -44,22 +83,13 @@ function SolveProblem() {
         input: input.trim()
       }, { withCredentials: true });
       
-      let outputMessage = "Code executed successfully!\n\n";
-      if (res.data.inputSource === 'custom') {
-        outputMessage += "Using custom input\n";
-      } else if (res.data.inputSource === 'first_test_case') {
-        outputMessage += "Using first test case input\n";
-      } else {
-        outputMessage += "No input provided\n";
-      }
-      outputMessage += `\nOutput:\n${res.data.output}`;
-      
-      setOutput(outputMessage);
+      setOutput(res.data.output);
     } catch (err) {
       if (err.response?.data?.message?.includes('token')) {
         setError("Login to submit code");
       } else {
-        setError(err.response?.data?.message || "Failed to run code");
+        // Show compiler errors in the output window
+        setOutput(`Error: ${err.response?.data?.message || "Failed to run code"}`);
       }
     } finally {
       setLoading(false);
@@ -86,12 +116,13 @@ function SolveProblem() {
         code,
         input: input.trim()
       }, { withCredentials: true });
-      setOutput(`Custom Input Test:\n\nInput:\n${input}\n\nOutput:\n${res.data.output}`);
+      setOutput(res.data.output);
     } catch (err) {
       if (err.response?.data?.message?.includes('token')) {
         setError("Login to submit code");
       } else {
-        setError(err.response?.data?.message || "Failed to test with custom input");
+        // Show compiler errors in the output window
+        setOutput(`Error: ${err.response?.data?.message || "Failed to test with custom input"}`);
       }
     } finally {
       setLoading(false);
@@ -140,12 +171,25 @@ function SolveProblem() {
       const res = await axios.post(`http://localhost:3000/problems/${problemId}/submit`, {
         code
       }, { withCredentials: true });
-      setOutput(`Submission Result:\n\n${res.data.message}`);
+      
+      // Store test results and show modal
+      if (res.data.results) {
+        console.log('Received test results:', res.data.results.length, 'test cases');
+        console.log('Summary:', res.data.summary);
+        setTestResults({
+          results: res.data.results,
+          summary: res.data.summary
+        });
+        setShowResults(true);
+      } else {
+        setOutput(`Submission Result:\n\n${res.data.message}`);
+      }
     } catch (err) {
       if (err.response?.data?.message?.includes('token')) {
         setError("Login to submit code");
       } else {
-        setError(err.response?.data?.message || "Failed to submit solution");
+        // Show compiler errors in the output window
+        setOutput(`Error: ${err.response?.data?.message || "Failed to submit solution"}`);
       }
     } finally {
       setLoading(false);
@@ -158,6 +202,9 @@ function SolveProblem() {
     setOutput("");
     setAiReview("");
     setError("");
+    // Clear saved code and input from localStorage
+    localStorage.removeItem(`code_${problemId}`);
+    localStorage.removeItem(`input_${problemId}`);
   };
 
   if (error) return <div className="text-red-600">{error}</div>;
@@ -214,25 +261,35 @@ function SolveProblem() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg flex flex-col">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Code Editor</h2>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleRun}
-                    disabled={loading}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold text-sm transition-all duration-150 disabled:opacity-50"
-                  >
-                    {loading ? "Running..." : "Run Code"}
-                  </button>
-                  <button
-                    onClick={clearAll}
-                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 font-semibold text-sm transition-all duration-150"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
+                         <div className="p-6 border-b border-gray-200">
+               <div className="flex items-center justify-between mb-4">
+                 <div className="flex items-center space-x-3">
+                   <h2 className="text-xl font-bold text-gray-800">Code Editor</h2>
+                   {isSaved && (
+                     <div className="flex items-center text-green-600 text-sm">
+                       <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                       </svg>
+                       Auto-saved
+                     </div>
+                   )}
+                 </div>
+                 <div className="flex space-x-2">
+                   <button
+                     onClick={handleRun}
+                     disabled={loading}
+                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold text-sm transition-all duration-150 disabled:opacity-50"
+                   >
+                     {loading ? "Running..." : "Run Code"}
+                   </button>
+                   <button
+                     onClick={clearAll}
+                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 font-semibold text-sm transition-all duration-150"
+                   >
+                     Clear All
+                   </button>
+                 </div>
+               </div>
               <div className="text-sm text-gray-600 mb-2">
                 Run Code will use custom input if provided, otherwise first test case input
               </div>
@@ -245,12 +302,14 @@ function SolveProblem() {
             </div>
 
             <div className="flex-1 flex flex-col">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">Output</h3>
-                <div className="bg-gray-100 rounded-lg p-4 h-32 overflow-y-auto font-mono text-sm">
-                  {output || "Output will appear here..."}
-                </div>
-              </div>
+                             <div className="p-6 border-b border-gray-200">
+                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Output</h3>
+                 <div className={`rounded-lg p-4 h-32 overflow-y-auto font-mono text-sm ${
+                   output && output.startsWith('Error:') ? 'bg-red-50 text-red-700' : 'bg-gray-100'
+                 }`}>
+                   {output || "Output will appear here..."}
+                 </div>
+               </div>
 
               <div className="p-6 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Custom Input</h3>
@@ -294,10 +353,20 @@ function SolveProblem() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default SolveProblem;
+                 </div>
+       </div>
+       
+       {/* Test Case Results Modal */}
+       {testResults && (
+         <TestCaseResults
+           results={testResults.results}
+           summary={testResults.summary}
+           isOpen={showResults}
+           onClose={() => setShowResults(false)}
+         />
+       )}
+     </div>
+   );
+ }
+ 
+ export default SolveProblem;

@@ -58,12 +58,7 @@ npm install
 
 ## Running the Application
 
-### Option 1: Using the batch script (Windows)
-```bash
-start-services.bat
-```
-
-### Option 2: Manual startup
+### Option 1: Manual startup
 
 1. **Start the Backend Server**:
 ```bash

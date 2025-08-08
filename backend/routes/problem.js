@@ -178,6 +178,8 @@ router.post('/:problemId/submit', authMiddleware, async (req, res) => {
     let passedTests = 0;
     let totalTests = problem.testCases.length;
 
+    console.log(`Processing ${totalTests} test cases for problem ${req.params.problemId}`);
+
     // Run code against each test case
     for (let i = 0; i < problem.testCases.length; i++) {
       const testCase = problem.testCases[i];
@@ -203,6 +205,8 @@ router.post('/:problemId/submit', authMiddleware, async (req, res) => {
           passed: isPassed
         });
 
+        console.log(`Test case ${i + 1}: ${isPassed ? 'PASSED' : 'FAILED'}`);
+
         if (isPassed) {
           passedTests++;
         }
@@ -221,6 +225,8 @@ router.post('/:problemId/submit', authMiddleware, async (req, res) => {
 
     const allPassed = passedTests === totalTests;
     const status = allPassed ? 'accepted' : 'wrong_answer';
+
+    console.log(`Final results: ${passedTests}/${totalTests} passed, ${results.length} total results`);
 
     res.json({ 
       message: allPassed ? 'All test cases passed!' : 'Some test cases failed',
