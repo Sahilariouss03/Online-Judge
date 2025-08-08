@@ -39,7 +39,8 @@ app.use(
       const allowedOrigins = [
         'http://localhost:5173',
         'https://online-judge-wzu9.vercel.app',
-        'https://online-judge-wzu9-e6dkzk402-sahilariouss03s-projects.vercel.app'
+        'https://online-judge-wzu9-e6dkzk402-sahilariouss03s-projects.vercel.app',
+        'https://online-judge-wzu9-rj1alkt30-sahilariouss03s-projects.vercel.app'
       ];
       
       // Allow requests with no origin (like mobile apps or curl requests)
