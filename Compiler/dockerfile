@@ -1,0 +1,10 @@
+# Base Image
+FROM node:24-alpine
+# Set working directory -Will be shown in the container as /COMPILER
+    WORKDIR /COMPILER   
+RUN apk update && apk add --no-cache g++ build-base
+# Install dependencies
+COPY . .
+RUN npm install
+EXPOSE 5000
+CMD [ "node" , "compiler.js" ]

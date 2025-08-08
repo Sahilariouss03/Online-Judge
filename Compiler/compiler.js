@@ -28,7 +28,11 @@ app.post('/run',async(req,res) =>{
         res.status(200).json({output: result});
         // Clean up the generated file after execution
         fs.unlinkSync(filePath);
-        fs.unlinkSync(path.join(outputPath, `${path.basename(filePath, path.extname(filePath))}.exe`));
+        const jobId = path.basename(filePath, path.extname(filePath));
+        const executablePath = path.join(outputPath, jobId);
+        if (fs.existsSync(executablePath)) {
+            fs.unlinkSync(executablePath);
+        }
     } catch (error) {
         console.error('Error during execution:', error);
         // Provide more helpful error messages
