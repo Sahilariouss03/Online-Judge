@@ -91,12 +91,7 @@ function SolveProblem() {
           code,
           input: input.trim(),
         },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        getAxiosConfig()
       );
 
       setOutput(res.data.output);
@@ -136,12 +131,7 @@ function SolveProblem() {
           code,
           input: input.trim(),
         },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        getAxiosConfig()
       );
       setOutput(res.data.output);
     } catch (err) {
