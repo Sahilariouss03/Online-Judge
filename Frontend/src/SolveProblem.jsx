@@ -8,6 +8,7 @@ import TestCaseResults from "./TestCaseResults";
 function SolveProblem() {
   const { problemId } = useParams();
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://online-judge-backend-eze9.onrender.com';
   const [problem, setProblem] = useState(null);
   const [code, setCode] = useState("");
   const [input, setInput] = useState("");
@@ -85,7 +86,7 @@ function SolveProblem() {
     setError("");
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_COMPILER_URL}/problems/${problemId}/run`,
+        `${API_BASE_URL}/problems/${problemId}/run`,
         {
           code,
           input: input.trim(),
@@ -130,7 +131,7 @@ function SolveProblem() {
     setError("");
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_COMPILER_URL}/problems/${problemId}/run`,
+        `${API_BASE_URL}/problems/${problemId}/run`,
         {
           code,
           input: input.trim(),
