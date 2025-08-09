@@ -39,11 +39,11 @@ app.use((req, res, next) => {
   res.cookie = function (name, value, options = {}) {
     return originalCookie.call(this, name, value, {
       ...options,
-      sameSite: 'none',
+      sameSite: "none",
       secure: true,
       httpOnly: true,
-      path: '/',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
   };
   next();
@@ -51,30 +51,36 @@ app.use((req, res, next) => {
 // CORS configuration for all environments
 app.use(
   cors({
-    origin: function(origin, callback) {
+    origin: function (origin, callback) {
       // List of allowed origins
       const allowedOrigins = [
-        'http://localhost:5173',
-        'https://online-judge-wzu9.vercel.app',
-        'https://online-judge-wzu9-e6dkzk402-sahilariouss03s-projects.vercel.app',
-        'https://online-judge-wzu9-rj1alkt30-sahilariouss03s-projects.vercel.app'
+        "http://localhost:5173",
+        "https://online-judge-wzu9.vercel.app",
+        "https://online-judge-wzu9-e6dkzk402-sahilariouss03s-projects.vercel.app",
+        "https://online-judge-wzu9-rj1alkt30-sahilariouss03s-projects.vercel.app",
       ];
-      
+
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      
+
       if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
         return callback(new Error(msg), false);
       }
-      
+
       return callback(null, origin);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
     exposedHeaders: ["set-cookie"],
-    maxAge: 86400 // 24 hours
+    maxAge: 86400, // 24 hours
   })
 );
 
@@ -85,14 +91,14 @@ app.use("/problems", problemRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(500).json({ message: "Something went wrong!" });
 });
 
 // Register route
 app.post("/register", async (req, res) => {
   try {
     const { firstName, LastName, email, password } = req.body;
-    
+
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
@@ -105,7 +111,7 @@ app.post("/register", async (req, res) => {
       firstName,
       LastName,
       email,
-      password: hashedPassword
+      password: hashedPassword,
     });
 
     await user.save();
@@ -122,7 +128,7 @@ app.post("/register", async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 3600000 // 1 hour
+      maxAge: 3600000, // 1 hour
     });
 
     // Return user without password
@@ -131,7 +137,7 @@ app.post("/register", async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
-      user: userWithoutPassword
+      user: userWithoutPassword,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -161,25 +167,19 @@ app.post("/ai-review", async (req, res) => {
 
     // Return specific error messages to the client
     if (error.message.includes("not configured")) {
-      return res
-        .status(503)
-        .json({
-          message:
-            "AI review service is not configured. Please contact the administrator.",
-        });
+      return res.status(503).json({
+        message:
+          "AI review service is not configured. Please contact the administrator.",
+      });
     } else if (error.message.includes("temporarily unavailable")) {
-      return res
-        .status(503)
-        .json({
-          message:
-            "AI review service is temporarily unavailable. Please try again later.",
-        });
+      return res.status(503).json({
+        message:
+          "AI review service is temporarily unavailable. Please try again later.",
+      });
     } else {
-      return res
-        .status(500)
-        .json({
-          message: "Failed to generate AI review. Please try again later.",
-        });
+      return res.status(500).json({
+        message: "Failed to generate AI review. Please try again later.",
+      });
     }
   }
 });

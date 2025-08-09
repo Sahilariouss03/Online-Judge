@@ -65,14 +65,14 @@ function ProfileDropdown({ setIsLoggedIn }) {
 
   const handleLogout = async () => {
     try {
-      await fetch(getApiUrl('logout'), {
+      await fetch(getApiUrl("logout"), {
         method: "POST",
-        credentials: "include"
+        credentials: "include",
       });
     } catch (error) {
       console.error("Logout error:", error);
     }
-    
+
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("user");
     setIsLoggedIn(false);
@@ -91,7 +91,7 @@ function ProfileDropdown({ setIsLoggedIn }) {
         updateData.LastName = LastName;
       if (email && email !== originalUser.email) updateData.email = email;
       if (password) updateData.password = password;
-      const res = await fetch(getApiUrl('users/profile'), {
+      const res = await fetch(getApiUrl("users/profile"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +113,7 @@ function ProfileDropdown({ setIsLoggedIn }) {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(getApiUrl('users/profile'), {
+      const res = await fetch(getApiUrl("users/profile"), {
         method: "DELETE",
         credentials: "include",
       });

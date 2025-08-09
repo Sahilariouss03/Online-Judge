@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl, getAxiosConfig } from "./utils/api";
-import assets from './utils/assets';
+import assets from "./utils/assets";
 
 function Problems() {
   const navigate = useNavigate();
@@ -24,10 +24,10 @@ function Problems() {
 
   const fetchProblems = async () => {
     try {
-      const res = await axios.get(getApiUrl('problems'), getAxiosConfig());
+      const res = await axios.get(getApiUrl("problems"), getAxiosConfig());
       setProblems(res.data.problems || []);
     } catch (err) {
-      console.error('Error fetching problems:', err);
+      console.error("Error fetching problems:", err);
       setError("Failed to fetch problems");
     }
   };
@@ -39,7 +39,7 @@ function Problems() {
   const handleAddProblem = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(getApiUrl('problems'), newProblem, getAxiosConfig());
+      await axios.post(getApiUrl("problems"), newProblem, getAxiosConfig());
       setShowAdd(false);
       setNewProblem({
         problemId: "",
@@ -118,14 +118,16 @@ function Problems() {
       {/* Center Logo and Name */}
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center z-50 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
         <img src={assets.logo} alt="AlgoArena Logo" className="w-8 h-8 mr-2" />
-        <span className="text-xl font-bold text-blue-600 tracking-wide">AlgoArena</span>
+        <span className="text-xl font-bold text-blue-600 tracking-wide">
+          AlgoArena
+        </span>
       </div>
 
       {/* Login Button - Top Right */}
       {!user.email && (
         <div className="absolute top-4 right-4 z-50">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate("/login")}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold text-sm transition-all duration-150 shadow-md"
           >
             Login
@@ -139,10 +141,11 @@ function Problems() {
           <span className="text-3xl mr-4">👋</span>
           <div>
             <div className="text-xl font-bold text-blue-700 mb-1">
-              Welcome back, {user.firstName || 'Coder'}!
+              Welcome back, {user.firstName || "Coder"}!
             </div>
             <div className="text-gray-700">
-              Ready to tackle some algorithmic challenges? Choose a problem below to get started.
+              Ready to tackle some algorithmic challenges? Choose a problem
+              below to get started.
             </div>
           </div>
         </div>
@@ -335,7 +338,11 @@ function Problems() {
                   onClick={() => {
                     const updatedTestCases = [
                       ...(editingProblem.testCases || []),
-                      { input: "", expectedOutput: "", description: "Test case" },
+                      {
+                        input: "",
+                        expectedOutput: "",
+                        description: "Test case",
+                      },
                     ];
                     setEditingProblem({
                       ...editingProblem,
@@ -359,9 +366,10 @@ function Problems() {
                     <button
                       type="button"
                       onClick={() => {
-                        const updatedTestCases = editingProblem.testCases.filter(
-                          (_, i) => i !== index
-                        );
+                        const updatedTestCases =
+                          editingProblem.testCases.filter(
+                            (_, i) => i !== index
+                          );
                         setEditingProblem({
                           ...editingProblem,
                           testCases: updatedTestCases,

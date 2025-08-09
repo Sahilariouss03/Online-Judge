@@ -1,7 +1,7 @@
-import logoImage from '../assets/logo.png';
+import logoImage from "../assets/logo.png";
 
 const assets = {
-    logo: logoImage
+  logo: logoImage,
 };
 
 export default assets;
