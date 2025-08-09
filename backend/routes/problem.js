@@ -80,7 +80,8 @@ router.post('/:problemId/run', authMiddleware, async (req, res) => {
     }
 
     // Send code to compiler service
-    const compilerResponse = await axios.post('http://localhost:5000/run', {
+    const compilerUrl = process.env.COMPILER_URL || 'http://localhost:5000';
+    const compilerResponse = await axios.post(`${compilerUrl}/run`, {
       code,
       input: inputToUse,
       language: 'cpp'
@@ -111,7 +112,8 @@ router.post('/:problemId/test-custom', authMiddleware, async (req, res) => {
     }
 
     // Run code with custom input
-    const compilerResponse = await axios.post('http://localhost:5000/run', {
+    const compilerUrl = process.env.COMPILER_URL || 'http://localhost:5000';
+    const compilerResponse = await axios.post(`${compilerUrl}/run`, {
       code,
       input: input || '',
       language: 'cpp'
@@ -151,7 +153,8 @@ router.post('/:problemId/submit', authMiddleware, async (req, res) => {
     // If no test cases available, run with custom input
     if (!problem.testCases || problem.testCases.length === 0) {
       try {
-        const compilerResponse = await axios.post('http://localhost:5000/run', {
+        const compilerUrl = process.env.COMPILER_URL || 'http://localhost:5000';
+        const compilerResponse = await axios.post(`${compilerUrl}/run`, {
           code,
           input: input || '',
           language: 'cpp'
@@ -185,7 +188,8 @@ router.post('/:problemId/submit', authMiddleware, async (req, res) => {
       const testCase = problem.testCases[i];
       
       try {
-        const compilerResponse = await axios.post('http://localhost:5000/run', {
+        const compilerUrl = process.env.COMPILER_URL || 'http://localhost:5000';
+        const compilerResponse = await axios.post(`${compilerUrl}/run`, {
           code,
           input: testCase.input,
           language: 'cpp'
