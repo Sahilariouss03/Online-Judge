@@ -86,7 +86,7 @@ function SolveProblem() {
     setError("");
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/problems/${problemId}/run`,
+        getApiUrl(`problems/${problemId}/run`),
         {
           code,
           input: input.trim(),
@@ -126,7 +126,7 @@ function SolveProblem() {
     setError("");
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/problems/${problemId}/run`,
+        getApiUrl(`problems/${problemId}/run`),
         {
           code,
           input: input.trim(),
